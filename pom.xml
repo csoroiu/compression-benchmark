@@ -22,8 +22,20 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>bintray-nitram509-jbrotli</id>
+            <name>bintray</name>
+            <url>http://dl.bintray.com/nitram509/jbrotli</url>
+        </repository>
+    </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>org.meteogroup.jbrotli</groupId>
+            <artifactId>jbrotli</artifactId>
+            <version>0.5.0</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>

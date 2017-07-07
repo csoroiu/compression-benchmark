@@ -8,8 +8,17 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipParameters;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.meteogroup.jbrotli.Brotli;
+import org.meteogroup.jbrotli.io.BrotliInputStream;
+import org.meteogroup.jbrotli.io.BrotliOutputStream;
+import org.meteogroup.jbrotli.libloader.BrotliLibraryLoader;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -40,44 +49,66 @@ public class Benchmark {
         }
     }
 
-    private static GzipParameters getGzipParamaters(int compressionLevel) {
+    private static GzipParameters getGzipParameters(int compressionLevel) {
         GzipParameters result = new GzipParameters();
         result.setCompressionLevel(compressionLevel);
         return result;
     }
 
-    private static LZ4Compressor getLZ4Paramaters(int compressionLevel) {
+    private static LZ4Compressor getLZ4Parameters(int compressionLevel) {
         return LZ4Factory.fastestInstance().highCompressor(compressionLevel);
     }
 
+    private static Brotli.Parameter getBrotliParameters(int compressionLevel) {
+        return new Brotli.Parameter().setQuality(compressionLevel);
+    }
+
     private static void initCodecs() {
+        BrotliLibraryLoader.loadBrotli();
+
         codecs = new ArrayList<>();
+
+        codecs.add(new StreamCodec("Brotli(1)",
+                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(1)),
+                BrotliInputStream::new));
+        codecs.add(new StreamCodec("Brotli(2)",
+                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(2)),
+                BrotliInputStream::new));
+        codecs.add(new StreamCodec("Brotli(3)",
+                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(3)),
+                BrotliInputStream::new));
+        codecs.add(new StreamCodec("Brotli(4)",
+                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(4)),
+                BrotliInputStream::new));
+        codecs.add(new StreamCodec("Brotli(6)",
+                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(6)),
+                BrotliInputStream::new));
+        codecs.add(new StreamCodec("Brotli(9)",
+                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(9)),
+                BrotliInputStream::new));
         codecs.add(new StreamCodec("java-Gzip",
                 GZIPOutputStream::new,
                 GZIPInputStream::new));
-//        codecs.add(new StreamCodec("Brotli(default)",
-//                Brot::new,
-//                BrotliInputStream::new));
         codecs.add(new StreamCodec("Gzip(fast)",
-                out -> new GzipCompressorOutputStream(out, getGzipParamaters(Deflater.BEST_SPEED)),
+                out -> new GzipCompressorOutputStream(out, getGzipParameters(Deflater.BEST_SPEED)),
                 GZIPInputStream::new));
         codecs.add(new StreamCodec("Gzip(default)",
                 GzipCompressorOutputStream::new,
                 GZIPInputStream::new));
         codecs.add(new StreamCodec("Gzip(best)",
-                out -> new GzipCompressorOutputStream(out, getGzipParamaters(Deflater.BEST_COMPRESSION)),
+                out -> new GzipCompressorOutputStream(out, getGzipParameters(Deflater.BEST_COMPRESSION)),
                 GZIPInputStream::new));
         codecs.add(new StreamCodec("Lz4(default/fast)",
                 LZ4BlockOutputStream::new,
                 LZ4BlockInputStream::new));
         codecs.add(new StreamCodec("Lz4(4)",
-                out -> new LZ4BlockOutputStream(out, 1 << 16, getLZ4Paramaters(4)),
+                out -> new LZ4BlockOutputStream(out, 1 << 16, getLZ4Parameters(4)),
                 LZ4BlockInputStream::new));
         codecs.add(new StreamCodec("Lz4(6)",
-                out -> new LZ4BlockOutputStream(out, 1 << 16, getLZ4Paramaters(6)),
+                out -> new LZ4BlockOutputStream(out, 1 << 16, getLZ4Parameters(6)),
                 LZ4BlockInputStream::new));
         codecs.add(new StreamCodec("Lz4(9)",
-                out -> new LZ4BlockOutputStream(out, 1 << 16, getLZ4Paramaters(9)),
+                out -> new LZ4BlockOutputStream(out, 1 << 16, getLZ4Parameters(9)),
                 LZ4BlockInputStream::new));
     }
 
