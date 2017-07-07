@@ -1,5 +1,7 @@
 package ro.derbederos.compress;
 
+import com.github.luben.zstd.ZstdInputStream;
+import com.github.luben.zstd.ZstdOutputStream;
 import net.jpountz.lz4.LZ4BlockInputStream;
 import net.jpountz.lz4.LZ4BlockOutputStream;
 import net.jpountz.lz4.LZ4Compressor;
@@ -13,12 +15,7 @@ import org.meteogroup.jbrotli.io.BrotliInputStream;
 import org.meteogroup.jbrotli.io.BrotliOutputStream;
 import org.meteogroup.jbrotli.libloader.BrotliLibraryLoader;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -64,28 +61,39 @@ public class Benchmark {
     }
 
     private static void initCodecs() {
-        BrotliLibraryLoader.loadBrotli();
-
         codecs = new ArrayList<>();
 
-        codecs.add(new StreamCodec("Brotli(1)",
-                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(1)),
-                BrotliInputStream::new));
-        codecs.add(new StreamCodec("Brotli(2)",
-                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(2)),
-                BrotliInputStream::new));
-        codecs.add(new StreamCodec("Brotli(3)",
-                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(3)),
-                BrotliInputStream::new));
-        codecs.add(new StreamCodec("Brotli(4)",
-                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(4)),
-                BrotliInputStream::new));
-        codecs.add(new StreamCodec("Brotli(6)",
-                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(6)),
-                BrotliInputStream::new));
-        codecs.add(new StreamCodec("Brotli(9)",
-                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(9)),
-                BrotliInputStream::new));
+//        BrotliLibraryLoader.loadBrotli();
+//        codecs.add(new StreamCodec("Brotli(1)",
+//                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(1)),
+//                BrotliInputStream::new));
+//        codecs.add(new StreamCodec("Brotli(2)",
+//                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(2)),
+//                BrotliInputStream::new));
+//        codecs.add(new StreamCodec("Brotli(3)",
+//                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(3)),
+//                BrotliInputStream::new));
+//        codecs.add(new StreamCodec("Brotli(4)",
+//                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(4)),
+//                BrotliInputStream::new));
+//        codecs.add(new StreamCodec("Brotli(6)",
+//                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(6)),
+//                BrotliInputStream::new));
+//        codecs.add(new StreamCodec("Brotli(9)",
+//                outputStream -> new BrotliOutputStream(outputStream, getBrotliParameters(9)),
+//                BrotliInputStream::new));
+        codecs.add(new StreamCodec("zstd(1) - fastest",
+                outStream -> new ZstdOutputStream(outStream, 1),
+                ZstdInputStream::new));
+        codecs.add(new StreamCodec("zstd(5) - fast",
+                outStream -> new ZstdOutputStream(outStream, 1),
+                ZstdInputStream::new));
+        codecs.add(new StreamCodec("zstd(11) - normal",
+                outStream -> new ZstdOutputStream(outStream, 10),
+                ZstdInputStream::new));
+//        codecs.add(new StreamCodec("zstd(17) - maximum",
+//                outStream -> new ZstdOutputStream(outStream, 20),
+//                ZipInputStream::new));
         codecs.add(new StreamCodec("java-Gzip",
                 GZIPOutputStream::new,
                 GZIPInputStream::new));

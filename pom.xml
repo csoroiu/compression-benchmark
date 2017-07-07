@@ -32,6 +32,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.github.luben</groupId>
+            <artifactId>zstd-jni</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.meteogroup.jbrotli</groupId>
             <artifactId>jbrotli</artifactId>
             <version>0.5.0</version>
