@@ -86,14 +86,14 @@ public class Benchmark {
                 outStream -> new ZstdOutputStream(outStream, 1),
                 ZstdInputStream::new));
         codecs.add(new StreamCodec("zstd(5) - fast",
-                outStream -> new ZstdOutputStream(outStream, 1),
+                outStream -> new ZstdOutputStream(outStream, 5),
                 ZstdInputStream::new));
         codecs.add(new StreamCodec("zstd(11) - normal",
-                outStream -> new ZstdOutputStream(outStream, 10),
+                outStream -> new ZstdOutputStream(outStream, 11),
                 ZstdInputStream::new));
-//        codecs.add(new StreamCodec("zstd(17) - maximum",
-//                outStream -> new ZstdOutputStream(outStream, 20),
-//                ZipInputStream::new));
+        codecs.add(new StreamCodec("zstd(17) - maximum",
+                outStream -> new ZstdOutputStream(outStream, 17),
+                ZstdInputStream::new));
         codecs.add(new StreamCodec("java-Gzip",
                 GZIPOutputStream::new,
                 GZIPInputStream::new));
@@ -112,10 +112,10 @@ public class Benchmark {
         codecs.add(new StreamCodec("Lz4(4)",
                 out -> new LZ4BlockOutputStream(out, 1 << 16, getLZ4Parameters(4)),
                 LZ4BlockInputStream::new));
-        codecs.add(new StreamCodec("Lz4(6)",
+        codecs.add(new StreamCodec("Lz4(6) - normal",
                 out -> new LZ4BlockOutputStream(out, 1 << 16, getLZ4Parameters(6)),
                 LZ4BlockInputStream::new));
-        codecs.add(new StreamCodec("Lz4(9)",
+        codecs.add(new StreamCodec("Lz4(9) - maximum",
                 out -> new LZ4BlockOutputStream(out, 1 << 16, getLZ4Parameters(9)),
                 LZ4BlockInputStream::new));
     }
