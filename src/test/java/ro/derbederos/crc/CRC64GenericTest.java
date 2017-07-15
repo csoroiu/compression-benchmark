@@ -61,8 +61,12 @@ public class CRC64GenericTest {
         CRCParameters kermit = new CRCParameters("CRC-16/CCITT", 16, 0x1021,
                 0, true, true, 0, 0x2189, 0);
 
+        CRCParameters crc12UMTS = new CRCParameters("CRC-12/3GPP", 12, 0x80f,
+                0, false, true, 0, 0xdaf, 0);
+
         return Arrays.asList(crc64, crc64go, crc64we, crc64xz,
                 crc32, crc32autosar, crc32bzip2,
-                crc16, xmodem, ccittfalse, augccitt, kermit);
+                crc16, xmodem, ccittfalse, augccitt, kermit,
+                crc12UMTS);
     }
 }
