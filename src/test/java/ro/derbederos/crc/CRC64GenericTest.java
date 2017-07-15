@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.Checksum;
@@ -34,15 +35,37 @@ public class CRC64GenericTest {
         assertEquals(Long.toHexString(crcParameters.getCheck()), Long.toHexString(value));
     }
 
+    @Test
+    public void testResidue() {
+        Checksum checksum = new CRC64Generic(
+                crcParameters.getWidth(),
+                crcParameters.getPoly(),
+                0,
+                crcParameters.getRefIn(),
+                crcParameters.getRefOut(),
+                0);
+
+        byte[] newByte = longToBytes(crcParameters.getXorOut());
+        checksum.update(newByte, 0, newByte.length);
+        long residue = checksum.getValue();
+        assertEquals(Long.toHexString(crcParameters.getResidue()), Long.toHexString(residue));
+    }
+
+    private static byte[] longToBytes(long x) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(x);
+        return buffer.array();
+    }
+
     @Parameterized.Parameters
     public static List<CRCParameters> getCRCParameters() {
         CRCParameters crc64 = new CRCParameters("CRC-64", 64, 0x42F0E1EBA9EA3693L, 0,
                 false, false, 0, 0x6c40df5f0b497347L, 0);
-        CRCParameters crc64go = new CRCParameters("CRC-64/GO-ISO", 64, 0x000000000000001bL, 0xFFFFFFFFFFFFFFFFL,
+        CRCParameters crc64iso = new CRCParameters("CRC-64/GO-ISO", 64, 0x000000000000001bL, 0xFFFFFFFFFFFFFFFFL,
                 true, true, 0xFFFFFFFFFFFFFFFFL, 0xb90956c775a41001L, 0x5300000000000000L);
         CRCParameters crc64we = new CRCParameters("CRC-64/WE", 64, 0x42F0E1EBA9EA3693L, 0xFFFFFFFFFFFFFFFFL,
                 false, false, 0xFFFFFFFFFFFFFFFFL, 0x62ec59e3f1a4f00aL, 0xfcacbebd5931a992L);
-        CRCParameters crc64xz = new CRCParameters("CRC-64/XZ", 64, 0x42F0E1EBA9EA3693L, 0xFFFFFFFFFFFFFFFFL,
+        CRCParameters crc64ecma = new CRCParameters("CRC-64/XZ-ECMA", 64, 0x42F0E1EBA9EA3693L, 0xFFFFFFFFFFFFFFFFL,
                 true, true, 0xFFFFFFFFFFFFFFFFL, 0x995dc9bbdf1939faL, 0x49958c9abd7d353fL);
         CRCParameters crc32 = new CRCParameters("CRC-32", 32, 0x04C11DB7L, 0xFFFFFFFFL,
                 true, true, 0xFFFFFFFFL, 0xcbf43926L, 0xdebb20e3L);
@@ -64,9 +87,12 @@ public class CRC64GenericTest {
         CRCParameters crc12UMTS = new CRCParameters("CRC-12/3GPP", 12, 0x80f,
                 0, false, true, 0, 0xdaf, 0);
 
-        return Arrays.asList(crc64, crc64go, crc64we, crc64xz,
+        CRCParameters crc16DECT = new CRCParameters("CRC-16/DECT-R", 16, 0x0589,
+                0, false, false, 0x01, 0x007e, 0x0589);
+
+        return Arrays.asList(crc64, crc64iso, crc64we, crc64ecma,
                 crc32, crc32autosar, crc32bzip2,
                 crc16, xmodem, ccittfalse, augccitt, kermit,
-                crc12UMTS);
+                crc12UMTS, crc16DECT);
     }
 }
