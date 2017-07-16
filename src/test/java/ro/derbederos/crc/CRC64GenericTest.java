@@ -47,12 +47,17 @@ public class CRC64GenericTest {
 
         long input = crcParameters.getXorOut();
         if (crcParameters.getRefOut()) {
-            input = Long.reverse(input) >>> 56; //TODO: hack, fixes issue with CRC-5/USB
+            //TODO: hack, fixes issue with CRC-5/USB
+            input = Long.reverse(input) >>> 64 - roundToByte(crcParameters.getWidth());
         }
         byte[] newByte = longToBytes(input);
         checksum.update(newByte, 0, newByte.length);
         long residue = checksum.getValue();
         assertEquals(Long.toHexString(crcParameters.getResidue()), Long.toHexString(residue));
+    }
+
+    private static int roundToByte(int bits) {
+        return (bits + 7) / 8 * 8;
     }
 
     private static byte[] longToBytes(long x) {
