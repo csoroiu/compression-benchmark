@@ -6,23 +6,25 @@ import java.util.zip.Checksum;
  * http://en.wikipedia.org/wiki/Cyclic_redundancy_check
  * http://reveng.sourceforge.net/crc-catalogue/
  */
-public class CRC32 implements Checksum {
+public class CRC16Generic implements Checksum {
 
-    final private int lookupTable[] = new int[0x100];
-    final private int poly;
-    final private int initialValue;
+    final private short lookupTable[] = new short[0x100];
+    final private int width;
+    final private short poly;
+    final private short initialValue;
     final private boolean refIn; // reflect input data bytes
     final private boolean refOut; // resulted sum needs to be reversed before xor
-    final private int xorOut;
-    private int crc;
+    final private short xorOut;
+    private short crc;
 
-    public CRC32(int poly, int initialValue,
-                 boolean refIn, boolean refOut, int xorOut) {
-        this.poly = poly;
-        this.initialValue = initialValue;
+    public CRC16Generic(int width, int poly, int initialValue,
+                        boolean refIn, boolean refOut, int xorOut) {
+        this.width = width;
+        this.poly = (short) poly;
+        this.initialValue = (short) initialValue;
         this.refIn = refIn;
         this.refOut = refOut;
-        this.xorOut = xorOut;
+        this.xorOut = (short) xorOut;
         if (refIn) {
             initLookupTableReflected();
         } else {
@@ -32,14 +34,14 @@ public class CRC32 implements Checksum {
     }
 
     private void initLookupTableReflected() {
-        int poly = Integer.reverse(this.poly);
+        short poly = reverseShort(this.poly << 16 - width);
         for (int i = 0; i < 0x100; i++) {
-            int v = i;
+            short v = (short) i;
             for (int j = 0; j < 8; j++) {
                 if ((v & 1) == 1) {
-                    v = (v >>> 1) ^ poly;
+                    v = (short) (((v & 0xFFFF) >>> 1) ^ poly);
                 } else {
-                    v = v >>> 1;
+                    v = (short) ((v & 0xFFFF) >>> 1);
                 }
             }
             lookupTable[i] = v;
@@ -47,14 +49,14 @@ public class CRC32 implements Checksum {
     }
 
     private void initLookupTableUnreflected() {
-        int poly = this.poly;
+        short poly = (short) (this.poly << 16 - width);
         for (int i = 0; i < 0x100; i++) {
-            int v = i << 24;
+            short v = (short) (i << 8);
             for (int j = 0; j < 8; j++) {
                 if ((v & 0x8000000000000000L) != 0) {
-                    v = (v << 1) ^ poly;
+                    v = (short) ((v << 1) ^ poly);
                 } else {
-                    v = (v << 1);
+                    v = (short) (v << 1);
                 }
             }
             lookupTable[i] = v;
@@ -63,17 +65,17 @@ public class CRC32 implements Checksum {
 
     public void reset() {
         if (refIn) {
-            crc = Integer.reverse(initialValue);
+            crc = reverseShort(initialValue << 16 - width);
         } else {
-            crc = initialValue;
+            crc = (short) (initialValue << 16 - width);
         }
     }
 
     public void update(int b) {
         if (refIn) {
-            crc = (crc >>> 8) ^ lookupTable[(crc ^ b) & 0xff];
+            crc = (short) ((((int) crc & 0xFFFF) >>> 8) ^ lookupTable[((crc ^ b) & 0xff)]);
         } else {
-            crc = (crc << 8) ^ lookupTable[((crc >>> 24) ^ b) & 0xff];
+            crc = (short) ((((int) crc & 0xFFFF) << 8) ^ lookupTable[((crc >>> 8) ^ b) & 0xff]);
         }
     }
 
@@ -92,22 +94,37 @@ public class CRC32 implements Checksum {
     private void updateReflected(byte[] src, int offset, int len) {
         for (int i = offset; i < offset + len; i++) {
             int value = src[i];
-            crc = (crc >>> 8) ^ lookupTable[(crc ^ value) & 0xff];
+            crc = (short) ((((int) crc & 0xFFFF) >>> 8) ^ lookupTable[((crc ^ value) & 0xff)]);
         }
     }
 
     private void updateUnreflected(byte[] src, int offset, int len) {
         for (int i = offset; i < offset + len; i++) {
             int value = src[i];
-            crc = (crc << 8) ^ lookupTable[((crc >>> 24) ^ value) & 0xff];
+            crc = (short) ((((int) crc & 0xFFFF) << 8) ^ lookupTable[((crc >>> 8) ^ value) & 0xff]);
         }
     }
 
     public long getValue() {
-        if (refOut == refIn) {
-            return ((long) (crc ^ xorOut)) & 0xFFFFFFFFL;
-        } else {
-            return ((long) (Integer.reverse(crc) ^ xorOut)) & 0xFFFFFFFFL;
+        short xorOut = this.xorOut;
+        if (!refOut) {
+            xorOut <<= 16 - width;
         }
+
+        long result;
+        if (refOut == refIn) {
+            result = (crc ^ xorOut) & 0xFFFFL;
+        } else {
+            result = (reverseShort(crc) ^ xorOut) & 0xFFFFL;
+        }
+
+        if (!refOut) {
+            result >>>= 16 - width;
+        }
+        return result;
+    }
+
+    private static short reverseShort(int i) {
+        return (short) (Integer.reverse(i) >>> 16);
     }
 }

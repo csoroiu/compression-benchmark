@@ -6,9 +6,10 @@ import java.util.zip.Checksum;
  * http://en.wikipedia.org/wiki/Cyclic_redundancy_check
  * http://reveng.sourceforge.net/crc-catalogue/
  */
-public class CRC32 implements Checksum {
+public class CRC32Generic implements Checksum {
 
     final private int lookupTable[] = new int[0x100];
+    final private int width;
     final private int poly;
     final private int initialValue;
     final private boolean refIn; // reflect input data bytes
@@ -16,8 +17,9 @@ public class CRC32 implements Checksum {
     final private int xorOut;
     private int crc;
 
-    public CRC32(int poly, int initialValue,
-                 boolean refIn, boolean refOut, int xorOut) {
+    public CRC32Generic(int width, int poly, int initialValue,
+                        boolean refIn, boolean refOut, int xorOut) {
+        this.width = width;
         this.poly = poly;
         this.initialValue = initialValue;
         this.refIn = refIn;
@@ -32,7 +34,7 @@ public class CRC32 implements Checksum {
     }
 
     private void initLookupTableReflected() {
-        int poly = Integer.reverse(this.poly);
+        int poly = Integer.reverse(this.poly << 32 - width);
         for (int i = 0; i < 0x100; i++) {
             int v = i;
             for (int j = 0; j < 8; j++) {
@@ -47,7 +49,7 @@ public class CRC32 implements Checksum {
     }
 
     private void initLookupTableUnreflected() {
-        int poly = this.poly;
+        int poly = this.poly << 32 - width;
         for (int i = 0; i < 0x100; i++) {
             int v = i << 24;
             for (int j = 0; j < 8; j++) {
@@ -63,9 +65,9 @@ public class CRC32 implements Checksum {
 
     public void reset() {
         if (refIn) {
-            crc = Integer.reverse(initialValue);
+            crc = Integer.reverse(initialValue << 32 - width);
         } else {
-            crc = initialValue;
+            crc = initialValue << 32 - width;
         }
     }
 
@@ -104,10 +106,21 @@ public class CRC32 implements Checksum {
     }
 
     public long getValue() {
-        if (refOut == refIn) {
-            return ((long) (crc ^ xorOut)) & 0xFFFFFFFFL;
-        } else {
-            return ((long) (Integer.reverse(crc) ^ xorOut)) & 0xFFFFFFFFL;
+        long xorOut = this.xorOut;
+        if (!refOut) {
+            xorOut <<= 32 - width;
         }
+
+        long result;
+        if (refOut == refIn) {
+            result = (crc ^ xorOut) & 0xFFFFFFFFL;
+        } else {
+            result = (Integer.reverse(crc) ^ xorOut) & 0xFFFFFFFFL;
+        }
+
+        if (!refOut) {
+            result >>>= 32 - width;
+        }
+        return result;
     }
 }

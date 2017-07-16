@@ -53,9 +53,13 @@ public class CRC64Unreflected implements Checksum {
     }
 
     public void update(byte src[], int offset, int len) {
+        updateUnreflected(src, offset, len);
+    }
+
+    private void updateUnreflected(byte[] src, int offset, int len) {
         for (int i = offset; i < offset + len; i++) {
-            byte value = src[i];
-            update(value);
+            int value = src[i];
+            crc = (crc << 8) ^ lookupTable[(int) (((crc >>> 56) ^ value) & 0xff)];
         }
     }
 

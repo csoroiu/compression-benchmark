@@ -34,6 +34,21 @@ public class CRC64UnreflectedTest {
         assertEquals(Long.toHexString(crcParameters.getCheck()), Long.toHexString(value));
     }
 
+    @Test
+    public void testCRCValueUpdateOneByOne() {
+        Checksum checksum = new CRC64Unreflected(
+                crcParameters.getPoly(),
+                crcParameters.getInitialValue(),
+                crcParameters.getRefOut(),
+                crcParameters.getXorOut());
+        checksum.reset();
+        for (byte inputByte : testInput) {
+            checksum.update(inputByte);
+        }
+        long value = checksum.getValue();
+        assertEquals(Long.toHexString(crcParameters.getCheck()), Long.toHexString(value));
+    }
+
     @Parameterized.Parameters(name = "{0}")
     public static List<CRCParameters> getCRCParameters() {
         CRCParameters crc64 = new CRCParameters("CRC-64", 64, 0x42F0E1EBA9EA3693L, 0,

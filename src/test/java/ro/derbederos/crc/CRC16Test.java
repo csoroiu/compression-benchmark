@@ -32,6 +32,21 @@ public class CRC16Test {
         assertEquals(Long.toHexString(crcParameters.getCheck()), Long.toHexString(value));
     }
 
+    @Test
+    public void testCRCValueUpdateOneByOne() {
+        Checksum checksum = new CRC16((int) crcParameters.getPoly(),
+                (int) crcParameters.getInitialValue(),
+                crcParameters.getRefIn(),
+                crcParameters.getRefOut(),
+                (int) crcParameters.getXorOut());
+        checksum.reset();
+        for (byte inputByte : testInput) {
+            checksum.update(inputByte);
+        }
+        long value = checksum.getValue();
+        assertEquals(Long.toHexString(crcParameters.getCheck()), Long.toHexString(value));
+    }
+
     @Parameterized.Parameters(name = "{0}")
     public static List<CRCParameters> getCRCParameters() {
         CRCParameters crc16 = new CRCParameters("CRC-16", 16, 0x8005, 0,
