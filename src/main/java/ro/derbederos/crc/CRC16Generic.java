@@ -2,26 +2,32 @@ package ro.derbederos.crc;
 
 import java.util.zip.Checksum;
 
+import static ro.derbederos.crc.Util.reverseShort;
+
 /*
  * http://en.wikipedia.org/wiki/Cyclic_redundancy_check
  * http://reveng.sourceforge.net/crc-catalogue/
+ * http://zlib.net/crc_v3.txt
+ */
+
+/**
+ * Byte-wise CRC implementation that can compute CRC with width <= 16 using different models.
  */
 public class CRC16Generic implements Checksum {
 
     final private short lookupTable[] = new short[0x100];
     final private int width;
     final private short poly;
-    final private short initialValue;
+    final private short init;
     final private boolean refIn; // reflect input data bytes
     final private boolean refOut; // resulted sum needs to be reversed before xor
     final private short xorOut;
     private short crc;
 
-    public CRC16Generic(int width, int poly, int initialValue,
-                        boolean refIn, boolean refOut, int xorOut) {
+    public CRC16Generic(int width, int poly, int init, boolean refIn, boolean refOut, int xorOut) {
         this.width = width;
         this.poly = (short) poly;
-        this.initialValue = (short) initialValue;
+        this.init = (short) init;
         this.refIn = refIn;
         this.refOut = refOut;
         this.xorOut = (short) xorOut;
@@ -65,9 +71,9 @@ public class CRC16Generic implements Checksum {
 
     public void reset() {
         if (refIn) {
-            crc = reverseShort(initialValue << 16 - width);
+            crc = reverseShort(init << 16 - width);
         } else {
-            crc = (short) (initialValue << 16 - width);
+            crc = (short) (init << 16 - width);
         }
     }
 
@@ -122,9 +128,5 @@ public class CRC16Generic implements Checksum {
             result >>>= 16 - width;
         }
         return result;
-    }
-
-    private static short reverseShort(int i) {
-        return (short) (Integer.reverse(i) >>> 16);
     }
 }

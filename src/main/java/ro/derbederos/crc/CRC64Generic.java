@@ -5,23 +5,27 @@ import java.util.zip.Checksum;
 /*
  * http://en.wikipedia.org/wiki/Cyclic_redundancy_check
  * http://reveng.sourceforge.net/crc-catalogue/
+ * http://zlib.net/crc_v3.txt
+ */
+
+/**
+ * Byte-wise CRC implementation that can compute CRC with width <= 64 using different models.
  */
 public class CRC64Generic implements Checksum {
 
     final private long lookupTable[] = new long[0x100];
     final private int width;
     final private long poly;
-    final private long initialValue;
+    final private long init;
     final private boolean refIn; // reflect input data bytes
     final private boolean refOut; // resulted sum needs to be reversed before xor
     final private long xorOut;
     private long crc;
 
-    public CRC64Generic(int width, long poly, long initialValue,
-                        boolean refIn, boolean refOut, long xorOut) {
+    public CRC64Generic(int width, long poly, long init, boolean refIn, boolean refOut, long xorOut) {
         this.width = width;
         this.poly = poly;
-        this.initialValue = initialValue;
+        this.init = init;
         this.refIn = refIn;
         this.refOut = refOut;
         this.xorOut = xorOut;
@@ -65,9 +69,9 @@ public class CRC64Generic implements Checksum {
 
     public void reset() {
         if (refIn) {
-            crc = Long.reverse(initialValue << 64 - width);
+            crc = Long.reverse(init << 64 - width);
         } else {
-            crc = initialValue << 64 - width;
+            crc = init << 64 - width;
         }
     }
 

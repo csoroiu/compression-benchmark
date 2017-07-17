@@ -5,21 +5,25 @@ import java.util.zip.Checksum;
 /*
  * http://en.wikipedia.org/wiki/Cyclic_redundancy_check
  * http://reveng.sourceforge.net/crc-catalogue/
+ * http://zlib.net/crc_v3.txt
+ */
+
+/**
+ * Byte-wise CRC implementation that can compute CRC-32 using different models.
  */
 public class CRC32 implements Checksum {
 
     final private int lookupTable[] = new int[0x100];
     final private int poly;
-    final private int initialValue;
+    final private int init;
     final private boolean refIn; // reflect input data bytes
     final private boolean refOut; // resulted sum needs to be reversed before xor
     final private int xorOut;
     private int crc;
 
-    public CRC32(int poly, int initialValue,
-                 boolean refIn, boolean refOut, int xorOut) {
+    public CRC32(int poly, int init, boolean refIn, boolean refOut, int xorOut) {
         this.poly = poly;
-        this.initialValue = initialValue;
+        this.init = init;
         this.refIn = refIn;
         this.refOut = refOut;
         this.xorOut = xorOut;
@@ -63,9 +67,9 @@ public class CRC32 implements Checksum {
 
     public void reset() {
         if (refIn) {
-            crc = Integer.reverse(initialValue);
+            crc = Integer.reverse(init);
         } else {
-            crc = initialValue;
+            crc = init;
         }
     }
 
