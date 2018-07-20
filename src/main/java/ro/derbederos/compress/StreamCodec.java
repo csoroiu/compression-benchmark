@@ -33,13 +33,13 @@ public class StreamCodec implements Codec {
 
     public byte[] decompress(byte[] data, int decompressedSizeEstimate) throws IOException {
         if (decompressedSizeEstimate == -1) {
-            decompressedSizeEstimate = data.length * 5;
+            decompressedSizeEstimate = (int) Math.min((long)data.length * 5, Integer.MAX_VALUE - 8);
         }
         ByteArrayInputStream compressedStream = new ByteArrayInputStream(data);
-        ByteArrayOutputStream result = new ByteArrayOutputStream(decompressedSizeEstimate);
+        byte result[] = new byte[decompressedSizeEstimate];
         try (InputStream is = decompressor.apply(compressedStream)) {
-            IOUtils.copy(is, result);
+            IOUtils.readFully(is, result);
         }
-        return result.toByteArray();
+        return result;
     }
 }

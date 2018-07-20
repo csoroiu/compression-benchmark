@@ -14,8 +14,11 @@ import org.meteogroup.jbrotli.Brotli;
 import org.meteogroup.jbrotli.io.BrotliInputStream;
 import org.meteogroup.jbrotli.io.BrotliOutputStream;
 import org.meteogroup.jbrotli.libloader.BrotliLibraryLoader;
+import ro.derbederos.compress.lab.ShannonEntropy;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -31,8 +34,8 @@ public class Benchmark {
 
     public static void main(String[] args) throws IOException {
         initCodecs();
-        byte[] data = readInputFile(INPUT_FILE);
-        double entropy = entropy(data);
+        byte[] data = readInputFile(INPUT_FILE, 1 << 29);
+        double entropy = ShannonEntropy.entropy(data);
         System.out.println("Entropy of data is: " + entropy);
         System.out.println("Estimated compressed size: " + (int) Math.ceil(entropy * data.length / 8L));
         for (Codec codec : codecs) {
@@ -136,37 +139,15 @@ public class Benchmark {
         );
     }
 
-    private static byte[] readInputFile(String inputFile) throws IOException {
-        System.out.println("Reading file " + inputFile);
+    private static byte[] readInputFile(String inputFile, int maxSize) throws IOException {
         StopWatch stopWatch = StopWatch.createStarted();
         File f = new File(inputFile);
-        ByteArrayOutputStream os = new ByteArrayOutputStream((int) f.length());
-        try (InputStream is = new BufferedInputStream(new FileInputStream(f))) {
-            IOUtils.copy(is, os);
-        }
+        int size = (int) (Math.min(f.length(), Integer.MAX_VALUE - 8));
+        size = Math.min(size, maxSize);
+        System.out.printf("Reading file %s (%d bytes).%n", inputFile, size);
+        byte b[] = new byte[size];
+        IOUtils.readFully(new FileInputStream(f), b, 0, size);
         System.out.println(stopWatch.getTime(TimeUnit.MILLISECONDS));
-        return os.toByteArray();
-    }
-
-    private static double entropy(byte[] data) {
-        int[] frequencies = new int[256];
-        for (byte byteValue : data) {
-            int intValue = ((int) byteValue) & 0xFF;
-            frequencies[intValue]++;
-        }
-        double entropy = 0;
-        double total = data.length;
-        double log2 = Math.log(2);
-        for (int frequency : frequencies) {
-            if (frequency != 0) {
-                // calculate the probability of a particular byte occuring
-                double probabilityOfByte = (double) frequency / total;
-                // calculate the next value to sum to previous entropy calculation
-                double value = probabilityOfByte * (Math.log(probabilityOfByte) / log2);
-                entropy = entropy + value;
-            }
-        }
-        entropy *= -1;
-        return entropy;
+        return b;
     }
 }
