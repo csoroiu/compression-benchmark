@@ -22,44 +22,33 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>bintray-nitram509-jbrotli</id>
-            <name>bintray</name>
-            <url>http://dl.bintray.com/nitram509/jbrotli</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
             <groupId>com.github.luben</groupId>
             <artifactId>zstd-jni</artifactId>
-            <version>1.4.3-1</version>
+            <version>1.5.0-4</version>
         </dependency>
-        <dependency>
-            <groupId>org.meteogroup.jbrotli</groupId>
-            <artifactId>jbrotli</artifactId>
-            <version>0.5.0</version>
-        </dependency>
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
+            <version>3.12.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.19</version>
+            <version>1.21</version>
         </dependency>
         <dependency>
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
-            <version>1.1.7.3</version>
+            <version>1.1.8.4</version>
         </dependency>
         <dependency>
             <groupId>org.lz4</groupId>
             <artifactId>lz4-java</artifactId>
-            <version>1.6.0</version>
+            <version>1.8.0</version>
         </dependency>
         <dependency>
             <groupId>org.tukaani</groupId>
@@ -74,7 +63,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

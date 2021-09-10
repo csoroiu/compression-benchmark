@@ -10,10 +10,7 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipParameters;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.meteogroup.jbrotli.Brotli;
-import org.meteogroup.jbrotli.io.BrotliInputStream;
-import org.meteogroup.jbrotli.io.BrotliOutputStream;
-import org.meteogroup.jbrotli.libloader.BrotliLibraryLoader;
+
 import ro.derbederos.compress.lab.ShannonEntropy;
 
 import java.io.File;
@@ -59,9 +56,6 @@ public class Benchmark {
         return LZ4Factory.fastestInstance().highCompressor(compressionLevel);
     }
 
-    private static Brotli.Parameter getBrotliParameters(int compressionLevel) {
-        return new Brotli.Parameter().setQuality(compressionLevel);
-    }
 
     private static void initCodecs() {
         codecs = new ArrayList<>();
